@@ -1,28 +1,37 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { signIn } from "~/app/login/actions";
+import { updatePassword } from "~/app/reset-password/actions";
 import { cn } from "~/lib/utils";
 
 const INPUT =
   "border border-border bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none";
 
-export function LoginForm() {
+export function ResetPasswordForm() {
   const router = useRouter();
-  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
     startTransition(async () => {
       try {
-        await signIn(emailOrUsername, password);
-        router.push("/wardrobe/quiz");
+        await updatePassword(password);
+        router.push("/wardrobe");
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -30,50 +39,42 @@ export function LoginForm() {
     });
   }
 
-  const canSubmit = emailOrUsername && password && !isPending;
+  const canSubmit = password && confirm && !isPending;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <label
-          htmlFor="emailOrUsername"
+          htmlFor="password"
           className="text-xs uppercase tracking-widest text-muted-foreground"
         >
-          Email or username
+          New Password
         </label>
-        <input
-          id="emailOrUsername"
-          type="text"
-          required
-          value={emailOrUsername}
-          onChange={(e) => setEmailOrUsername(e.target.value)}
-          placeholder="you@example.com or @username"
-          className={INPUT}
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="password"
-            className="text-xs uppercase tracking-widest text-muted-foreground"
-          >
-            Password
-          </label>
-          <Link
-            href="/forgot-password"
-            className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            Forgot password?
-          </Link>
-        </div>
         <input
           id="password"
           type="password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Your password"
+          placeholder="Min. 8 characters"
+          className={INPUT}
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor="confirm"
+          className="text-xs uppercase tracking-widest text-muted-foreground"
+        >
+          Confirm Password
+        </label>
+        <input
+          id="confirm"
+          type="password"
+          required
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder="Repeat your password"
           className={INPUT}
         />
       </div>
@@ -88,7 +89,7 @@ export function LoginForm() {
           !canSubmit ? "cursor-not-allowed opacity-30" : "hover:opacity-75",
         )}
       >
-        {isPending ? "Signing in…" : "Sign In"}
+        {isPending ? "Updating…" : "Update Password"}
       </button>
     </form>
   );

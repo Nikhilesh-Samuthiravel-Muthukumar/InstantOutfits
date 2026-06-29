@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveQuizResponse } from "~/app/wardrobe/quiz/actions";
 import { cn } from "~/lib/utils";
@@ -108,6 +109,7 @@ const QUESTIONS: Question[] = [
 type Answers = Record<string, string | string[]>;
 
 export function QuizFlow() {
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [submitted, setSubmitted] = useState(false);
@@ -171,14 +173,39 @@ export function QuizFlow() {
           All done
         </p>
         <h2 className="text-5xl font-black uppercase leading-none tracking-tighter text-foreground">
-          Style Profile
+          Style Quiz
           <br />
-          Saved.
+          Finished.
         </h2>
         <p className="mt-6 max-w-xs text-sm leading-relaxed text-muted-foreground">
           We'll use your answers to build outfit recommendations from your
           wardrobe.
         </p>
+
+        <div className="mt-12 w-full max-w-xs border border-border p-6 text-left">
+          <p className="mb-1 text-xs uppercase tracking-[0.3em] text-muted-foreground">
+            Next step
+          </p>
+          <h3 className="mb-2 text-xl font-black uppercase tracking-tighter text-foreground">
+            Create a new taste profile.
+          </h3>
+          <p className="mb-6 text-xs leading-relaxed text-muted-foreground">
+            Retake the quiz anytime to update your style preferences as your
+            taste evolves.
+          </p>
+          <button
+            type="button"
+            className="bg-foreground px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-background transition-opacity hover:opacity-75"
+            onClick={() => {
+              setAnswers({});
+              setSubmitted(false);
+              setStep(0);
+              router.refresh();
+            }}
+          >
+            Retake Quiz
+          </button>
+        </div>
       </div>
     );
   }
