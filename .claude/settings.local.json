@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npx @biomejs/biome check --error-on-warnings)",
+      "PowerShell(New-Item -ItemType Directory -Force \"D:\\\\Claude Code Projects\\\\Lumos\\\\instantoutfits\\\\src\\\\app\\\\login\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"D:\\\\Claude Code Projects\\\\Lumos\\\\instantoutfits\\\\src\\\\app\\\\auth\\\\callback\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"D:\\\\Claude Code Projects\\\\Lumos\\\\instantoutfits\\\\src\\\\components\\\\auth\")",
+      "Bash(Remove-Item \"D:\\\\Claude Code Projects\\\\Lumos\\\\instantoutfits\\\\src\\\\middleware.ts\")"
+    ]
+  }
+}
