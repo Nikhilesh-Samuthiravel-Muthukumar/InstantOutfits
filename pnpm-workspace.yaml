@@ -1,3 +1,5 @@
+onlyBuiltDependencies:
+  - supabase
 allowBuilds:
   sharp: true
 ignoredBuiltDependencies:
