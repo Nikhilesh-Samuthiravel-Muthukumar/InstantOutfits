@@ -10,6 +10,7 @@ import { cn } from "~/lib/utils";
 const links = [
   { href: "/wardrobe/quiz", label: "Style Quiz" },
   { href: "/wardrobe", label: "Wardrobe" },
+  { href: "/outfits", label: "Outfits" },
 ];
 
 export function Navbar() {

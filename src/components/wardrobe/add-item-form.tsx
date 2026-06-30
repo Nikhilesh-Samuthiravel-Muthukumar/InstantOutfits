@@ -61,9 +61,9 @@ export function AddItemForm({ onClose }: Props) {
         tabIndex={-1}
       />
       {/* Panel */}
-      <div className="relative z-10 w-full max-w-md border border-border bg-background sm:mx-4">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+      <div className="relative z-10 flex max-h-[90dvh] w-full max-w-md flex-col border border-border bg-background sm:mx-4">
+        {/* Header — sticky */}
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">
             Add Item
           </h2>
@@ -77,7 +77,7 @@ export function AddItemForm({ onClose }: Props) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-6 py-5">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
           {/* Photo upload */}
           <div>
             <input
