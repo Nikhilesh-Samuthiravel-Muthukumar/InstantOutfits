@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import type { SavedOutfit } from "~/app/outfits/actions";
+import type { TasteProfile } from "~/app/wardrobe/quiz/actions";
 import type { WardrobeItemWithUrl } from "~/app/wardrobe/actions";
 import { OutfitGenerator } from "~/components/outfits/outfit-generator";
 import { PastOutfitsList } from "~/components/outfits/past-outfits-list";
@@ -42,6 +43,13 @@ export default async function OutfitsPage() {
     }));
   }
 
+  // Fetch taste profiles
+  const { data: tasteProfiles } = await supabase
+    .from("taste_profiles")
+    .select("id, name, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
   // Fetch saved outfits, newest first
   const { data: savedOutfits } = await supabase
     .from("past_outfits")
@@ -52,7 +60,10 @@ export default async function OutfitsPage() {
   return (
     <main className="min-h-[calc(100vh-3.5rem)] px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-3xl">
-        <OutfitGenerator wardrobeItems={wardrobeItems} />
+        <OutfitGenerator
+          wardrobeItems={wardrobeItems}
+          tasteProfiles={(tasteProfiles ?? []) as TasteProfile[]}
+        />
         <PastOutfitsList
           outfits={(savedOutfits ?? []) as SavedOutfit[]}
           wardrobeItems={wardrobeItems}

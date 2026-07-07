@@ -2,14 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { saveQuizResponse } from "~/app/wardrobe/quiz/actions";
+import { createTasteProfile } from "~/app/wardrobe/quiz/actions";
 import { cn } from "~/lib/utils";
 
-type QuestionType = "single" | "multi";
+type QuestionType = "single" | "multi" | "color" | "name";
 
 interface Option {
   id: string;
   label: string;
+  color?: string;
 }
 
 interface Question {
@@ -21,7 +22,24 @@ interface Question {
   options: Option[];
 }
 
+const SKIN_TONES: Option[] = [
+  { id: "porcelain", label: "Porcelain", color: "#F7E8D8" },
+  { id: "fair", label: "Fair", color: "#EDD5B8" },
+  { id: "light", label: "Light", color: "#D4A882" },
+  { id: "medium", label: "Medium", color: "#B8834A" },
+  { id: "tan", label: "Tan", color: "#9B6B38" },
+  { id: "brown", label: "Brown", color: "#7A4E2D" },
+  { id: "deep", label: "Deep", color: "#3E1F0D" },
+];
+
 const QUESTIONS: Question[] = [
+  {
+    id: "skin_tone",
+    text: "What's your skin tone?",
+    subtitle: "Helps us match colors to your complexion.",
+    type: "color",
+    options: SKIN_TONES,
+  },
   {
     id: "fit",
     text: "What silhouettes feel most like you?",
@@ -104,6 +122,13 @@ const QUESTIONS: Question[] = [
       { id: "spontaneous", label: "Whatever catches my eye" },
     ],
   },
+  {
+    id: "_name",
+    text: "Name this taste profile.",
+    subtitle: "Give it a label — e.g. \"Summer Streetwear\" or \"Office Fits\".",
+    type: "name",
+    options: [],
+  },
 ];
 
 type Answers = Record<string, string | string[]>;
@@ -112,6 +137,7 @@ export function QuizFlow() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
+  const [profileName, setProfileName] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -128,7 +154,7 @@ export function QuizFlow() {
       : [];
 
   function toggleOption(id: string) {
-    if (question.type === "single") {
+    if (question.type === "single" || question.type === "color") {
       setAnswers((prev) => ({ ...prev, [question.id]: id }));
       return;
     }
@@ -144,6 +170,7 @@ export function QuizFlow() {
   }
 
   function canAdvance() {
+    if (question.type === "name") return profileName.trim().length > 0;
     const ans = answers[question.id];
     if (!ans) return false;
     if (Array.isArray(ans)) return ans.length > 0;
@@ -158,8 +185,12 @@ export function QuizFlow() {
     setError(null);
     startTransition(async () => {
       try {
-        await saveQuizResponse(answers);
-        setSubmitted(true);
+        const result = await createTasteProfile(profileName, answers);
+        if (result.error) {
+          setError(result.error);
+        } else {
+          setSubmitted(true);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
       }
@@ -170,40 +201,29 @@ export function QuizFlow() {
     return (
       <div className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center px-4 text-center">
         <p className="mb-4 text-xs uppercase tracking-[0.4em] text-muted-foreground">
-          All done
+          Profile saved
         </p>
         <h2 className="text-5xl font-black uppercase leading-none tracking-tighter text-foreground">
-          Style Quiz
-          <br />
-          Finished.
+          {profileName}
         </h2>
         <p className="mt-6 max-w-xs text-sm leading-relaxed text-muted-foreground">
-          We'll use your answers to build outfit recommendations from your
-          wardrobe.
+          Your taste profile is ready. Head to Outfits to generate looks with
+          it.
         </p>
-
-        <div className="mt-12 w-full max-w-xs border border-border p-6 text-left">
-          <p className="mb-1 text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            Next step
-          </p>
-          <h3 className="mb-2 text-xl font-black uppercase tracking-tighter text-foreground">
-            Create a new taste profile.
-          </h3>
-          <p className="mb-6 text-xs leading-relaxed text-muted-foreground">
-            Retake the quiz anytime to update your style preferences as your
-            taste evolves.
-          </p>
+        <div className="mt-10 flex gap-3">
           <button
             type="button"
             className="bg-foreground px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-background transition-opacity hover:opacity-75"
-            onClick={() => {
-              setAnswers({});
-              setSubmitted(false);
-              setStep(0);
-              router.refresh();
-            }}
+            onClick={() => router.push("/wardrobe/quiz")}
           >
-            Retake Quiz
+            My Profiles
+          </button>
+          <button
+            type="button"
+            className="border border-border px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-foreground transition-colors hover:border-foreground"
+            onClick={() => router.push("/outfits")}
+          >
+            Generate Outfits
           </button>
         </div>
       </div>
@@ -245,43 +265,95 @@ export function QuizFlow() {
           </p>
         )}
 
-        <div className="mt-8 flex flex-col gap-2">
-          {question.options.map((opt) => {
-            const selected = selectedIds.includes(opt.id);
-            const maxed =
-              !selected &&
-              question.type === "multi" &&
-              selectedIds.length >= (question.maxSelect ?? 99);
+        {/* Color swatch question */}
+        {question.type === "color" && (
+          <div className="mt-8 flex flex-wrap gap-4">
+            {question.options.map((opt) => {
+              const selected = selectedIds.includes(opt.id);
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => toggleOption(opt.id)}
+                  className="flex flex-col items-center gap-2"
+                >
+                  <span
+                    className={cn(
+                      "block h-14 w-14 transition-all",
+                      selected
+                        ? "outline outline-2 outline-offset-2 outline-foreground"
+                        : "outline outline-1 outline-transparent hover:outline-muted-foreground",
+                    )}
+                    style={{ backgroundColor: opt.color }}
+                  />
+                  <span
+                    className={cn(
+                      "text-[10px] uppercase tracking-wider",
+                      selected ? "text-foreground" : "text-muted-foreground",
+                    )}
+                  >
+                    {opt.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                disabled={maxed}
-                onClick={() => toggleOption(opt.id)}
-                className={cn(
-                  "flex items-center gap-4 border px-5 py-4 text-left text-sm transition-colors",
-                  selected
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border text-foreground hover:border-foreground",
-                  maxed && "cursor-not-allowed opacity-25",
-                )}
-              >
-                <span
+        {/* Profile name input */}
+        {question.type === "name" && (
+          <div className="mt-8">
+            <input
+              type="text"
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
+              placeholder="e.g. Summer Streetwear"
+              maxLength={40}
+              className="w-full border border-border bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
+            />
+          </div>
+        )}
+
+        {/* Standard option list */}
+        {(question.type === "single" || question.type === "multi") && (
+          <div className="mt-8 flex flex-col gap-2">
+            {question.options.map((opt) => {
+              const selected = selectedIds.includes(opt.id);
+              const maxed =
+                !selected &&
+                question.type === "multi" &&
+                selectedIds.length >= (question.maxSelect ?? 99);
+
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  disabled={maxed}
+                  onClick={() => toggleOption(opt.id)}
                   className={cn(
-                    "flex h-4 w-4 shrink-0 items-center justify-center border text-[10px] font-bold",
+                    "flex items-center gap-4 border px-5 py-4 text-left text-sm transition-colors",
                     selected
-                      ? "border-background text-background"
-                      : "border-muted-foreground text-transparent",
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-foreground hover:border-foreground",
+                    maxed && "cursor-not-allowed opacity-25",
                   )}
                 >
-                  ✓
-                </span>
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
+                  <span
+                    className={cn(
+                      "flex h-4 w-4 shrink-0 items-center justify-center border text-[10px] font-bold",
+                      selected
+                        ? "border-background text-background"
+                        : "border-muted-foreground text-transparent",
+                    )}
+                  >
+                    ✓
+                  </span>
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {error && <p className="mt-4 text-xs text-destructive">{error}</p>}
       </div>
@@ -308,7 +380,7 @@ export function QuizFlow() {
               : "hover:opacity-75",
           )}
         >
-          {isPending ? "Saving…" : step === total - 1 ? "Submit" : "Next →"}
+          {isPending ? "Saving…" : step === total - 1 ? "Save Profile" : "Next →"}
         </button>
       </div>
     </div>

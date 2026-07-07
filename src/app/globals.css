@@ -1,55 +1,64 @@
 @import "tailwindcss";
 
-@theme inline {
-  /* OKLCH Design Tokens — Light Mode Default (zinc) */
-  --color-background: oklch(1 0 0);
-  --color-foreground: oklch(0.145 0 0);
-  --color-muted: oklch(0.967 0 0);
-  --color-muted-foreground: oklch(0.556 0 0);
-  --color-card: oklch(1 0 0);
-  --color-card-foreground: oklch(0.145 0 0);
-  --color-popover: oklch(1 0 0);
-  --color-popover-foreground: oklch(0.145 0 0);
-  --color-border: oklch(0.92 0 0);
-  --color-input: oklch(0.92 0 0);
-  --color-primary: oklch(0.205 0 0);
-  --color-primary-foreground: oklch(0.985 0 0);
-  --color-secondary: oklch(0.967 0 0);
-  --color-secondary-foreground: oklch(0.205 0 0);
-  --color-accent: oklch(0.967 0 0);
-  --color-accent-foreground: oklch(0.205 0 0);
-  --color-destructive: oklch(0.577 0.245 27.325);
-  --color-ring: oklch(0.556 0 0);
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+@font-face {
+  font-family: "Migoney";
+  src: url("/fonts/Migoney.woff2") format("woff2"),
+       url("/fonts/Migoney.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
-.dark {
-  --color-background: oklch(0.145 0 0);
-  --color-foreground: oklch(0.985 0 0);
-  --color-muted: oklch(0.269 0 0);
-  --color-muted-foreground: oklch(0.708 0 0);
-  --color-card: oklch(0.145 0 0);
-  --color-card-foreground: oklch(0.985 0 0);
-  --color-popover: oklch(0.145 0 0);
-  --color-popover-foreground: oklch(0.985 0 0);
-  --color-border: oklch(0.269 0 0);
-  --color-input: oklch(0.269 0 0);
-  --color-primary: oklch(0.985 0 0);
-  --color-primary-foreground: oklch(0.205 0 0);
-  --color-secondary: oklch(0.269 0 0);
-  --color-secondary-foreground: oklch(0.985 0 0);
-  --color-accent: oklch(0.269 0 0);
-  --color-accent-foreground: oklch(0.985 0 0);
-  --color-destructive: oklch(0.396 0.141 25.723);
-  --color-ring: oklch(0.556 0 0);
+@font-face {
+  font-family: "Menik";
+  src: url("/fonts/Menik.woff2") format("woff2"),
+       url("/fonts/Menik.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Heatwaze";
+  src: url("/fonts/Heatwaze.woff2") format("woff2"),
+       url("/fonts/Heatwaze.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme inline {
+  /* Dark-only streetwear palette */
+  --color-background: oklch(0.08 0 0);
+  --color-foreground: oklch(0.98 0 0);
+  --color-muted: oklch(0.16 0 0);
+  --color-muted-foreground: oklch(0.5 0 0);
+  --color-card: oklch(0.11 0 0);
+  --color-card-foreground: oklch(0.98 0 0);
+  --color-popover: oklch(0.11 0 0);
+  --color-popover-foreground: oklch(0.98 0 0);
+  --color-border: oklch(0.22 0 0);
+  --color-input: oklch(0.16 0 0);
+  --color-primary: oklch(0.98 0 0);
+  --color-primary-foreground: oklch(0.08 0 0);
+  --color-secondary: oklch(0.16 0 0);
+  --color-secondary-foreground: oklch(0.98 0 0);
+  --color-accent: oklch(0.16 0 0);
+  --color-accent-foreground: oklch(0.98 0 0);
+  --color-destructive: oklch(0.55 0.22 27);
+  --color-ring: oklch(0.4 0 0);
+  --radius-sm: 0rem;
+  --radius-md: 0rem;
+  --radius-lg: 0rem;
+  --radius-xl: 0rem;
 }
 
 @layer base {
   * {
     @apply border-border;
+  }
+  html {
+    @apply dark;
   }
   body {
     @apply bg-background text-foreground;

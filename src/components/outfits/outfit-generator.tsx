@@ -1,17 +1,23 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { generateOutfitAction, saveOutfitAction } from "~/app/outfits/actions";
+import type { TasteProfile } from "~/app/wardrobe/quiz/actions";
 import type { WardrobeItemWithUrl } from "~/app/wardrobe/actions";
 import type { GeneratedOutfit } from "~/lib/ai/outfit-schema";
 import { cn } from "~/lib/utils";
 
 type Props = {
   wardrobeItems: WardrobeItemWithUrl[];
+  tasteProfiles: TasteProfile[];
 };
 
-export function OutfitGenerator({ wardrobeItems }: Props) {
+export function OutfitGenerator({ wardrobeItems, tasteProfiles }: Props) {
+  const [selectedProfileId, setSelectedProfileId] = useState<string>(
+    tasteProfiles[0]?.id ?? "",
+  );
   const [generated, setGenerated] = useState<GeneratedOutfit | null>(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +34,7 @@ export function OutfitGenerator({ wardrobeItems }: Props) {
     setSaved(false);
     setGenerated(null);
     startGenerate(async () => {
-      const result = await generateOutfitAction();
+      const result = await generateOutfitAction(selectedProfileId || undefined);
       if (result.error) setError(result.error);
       else if (result.outfit) setGenerated(result.outfit);
     });
@@ -56,15 +62,56 @@ export function OutfitGenerator({ wardrobeItems }: Props) {
         <button
           type="button"
           onClick={handleGenerate}
-          disabled={isGenerating}
+          disabled={isGenerating || tasteProfiles.length === 0}
           className={cn(
             "bg-foreground px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-background transition-opacity",
-            isGenerating ? "cursor-not-allowed opacity-30" : "hover:opacity-75",
+            isGenerating || tasteProfiles.length === 0
+              ? "cursor-not-allowed opacity-30"
+              : "hover:opacity-75",
           )}
         >
           {isGenerating ? "Generating…" : "Generate Outfit"}
         </button>
       </div>
+
+      {/* Taste profile selector */}
+      {tasteProfiles.length > 0 ? (
+        <div className="mb-8">
+          <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            Taste Profile
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {tasteProfiles.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setSelectedProfileId(p.id)}
+                className={cn(
+                  "border px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition-colors",
+                  selectedProfileId === p.id
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                )}
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="mb-8 border border-border p-5">
+          <p className="text-sm text-muted-foreground">
+            No taste profiles yet.{" "}
+            <Link
+              href="/wardrobe/quiz/new"
+              className="text-foreground underline underline-offset-2"
+            >
+              Create one
+            </Link>{" "}
+            to generate outfits.
+          </p>
+        </div>
+      )}
 
       {error && <p className="mb-6 text-sm text-destructive">{error}</p>}
 

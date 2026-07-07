@@ -18,7 +18,7 @@ export type SavedOutfit = {
   created_at: string;
 };
 
-export async function generateOutfitAction(): Promise<{
+export async function generateOutfitAction(profileId?: string): Promise<{
   outfit?: GeneratedOutfit;
   error?: string;
 }> {
@@ -28,15 +28,18 @@ export async function generateOutfitAction(): Promise<{
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/outfits");
 
-  // Fetch quiz answers
-  const { data: quizRow } = await supabase
-    .from("style_quiz_responses")
+  // Fetch taste profile answers
+  const profileQuery = supabase
+    .from("taste_profiles")
     .select("answers")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", user.id);
+
+  const { data: profileRow } = profileId
+    ? await profileQuery.eq("id", profileId).single()
+    : await profileQuery.order("created_at", { ascending: false }).limit(1).single();
 
   const quizAnswers =
-    (quizRow?.answers as Record<string, string | string[]>) ?? {};
+    (profileRow?.answers as Record<string, string | string[]>) ?? {};
 
   // Fetch wardrobe items
   const { data: items, error: itemsError } = await supabase
