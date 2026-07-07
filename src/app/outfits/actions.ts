@@ -53,7 +53,7 @@ export async function generateOutfitAction(): Promise<{
   }
 
   try {
-    const outfit = await generateOutfit(quizAnswers, items);
+    const outfit = await generateOutfit(quizAnswers, items, user.id);
     return { outfit };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Generation failed." };

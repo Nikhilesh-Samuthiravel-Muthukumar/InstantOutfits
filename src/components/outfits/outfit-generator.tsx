@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { useState, useTransition } from "react";
 import { generateOutfitAction, saveOutfitAction } from "~/app/outfits/actions";
-import type { GeneratedOutfit } from "~/lib/ai/outfit-schema";
 import type { WardrobeItemWithUrl } from "~/app/wardrobe/actions";
+import type { GeneratedOutfit } from "~/lib/ai/outfit-schema";
 import { cn } from "~/lib/utils";
 
 type Props = {

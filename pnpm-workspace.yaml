@@ -3,6 +3,7 @@ packages:
 onlyBuiltDependencies:
   - supabase
 allowBuilds:
+  core-js: true
   sharp: true
 ignoredBuiltDependencies:
   - sharp

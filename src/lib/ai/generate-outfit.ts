@@ -3,6 +3,7 @@ import { generateObject } from "ai";
 import type { WardrobeItem } from "~/app/wardrobe/actions";
 import { env } from "~/env";
 import { type GeneratedOutfit, OutfitSchema } from "~/lib/ai/outfit-schema";
+import { getPostHogClient } from "~/lib/posthog/server";
 
 type QuizAnswers = Record<string, string | string[]>;
 
@@ -59,6 +60,7 @@ Soft rules:
 export async function generateOutfit(
   quizAnswers: QuizAnswers,
   items: WardrobeItem[],
+  distinctId: string,
 ): Promise<GeneratedOutfit> {
   if (items.length === 0) {
     throw new Error(
@@ -66,14 +68,31 @@ export async function generateOutfit(
     );
   }
 
+  if (!env.ANTHROPIC_API_KEY) {
+    throw new Error("Anthropic API key is not configured.");
+  }
   const anthropic = createAnthropic({ apiKey: env.ANTHROPIC_API_KEY });
   const season = getSeason();
+  const phClient = getPostHogClient();
+  const generationStart = Date.now();
 
-  const { object } = await generateObject({
+  const { object, usage } = await generateObject({
     model: anthropic("claude-haiku-4-5-20251001"),
     schema: OutfitSchema,
     system: SYSTEM_PROMPT,
     prompt: buildPrompt(quizAnswers, items, season),
+  });
+
+  phClient.capture({
+    distinctId,
+    event: "$ai_generation",
+    properties: {
+      $ai_provider: "anthropic",
+      $ai_model: "claude-haiku-4-5-20251001",
+      $ai_input_tokens: usage.inputTokens,
+      $ai_output_tokens: usage.outputTokens,
+      $ai_latency: (Date.now() - generationStart) / 1000,
+    },
   });
 
   // Validate all returned IDs exist in the user's wardrobe

@@ -77,7 +77,10 @@ export function AddItemForm({ onClose }: Props) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 overflow-y-auto px-6 py-5"
+        >
           {/* Photo upload */}
           <div>
             <input

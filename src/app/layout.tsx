@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Navbar } from "~/components/navbar";
+import { PostHogProvider } from "./posthog-provider";
 import { ThemeProvider } from "./theme-provider";
 import "./globals.css";
 
@@ -20,10 +21,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <ThemeProvider>
-          <Navbar />
-          {children}
-        </ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider>
+            <Navbar />
+            {children}
+          </ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
