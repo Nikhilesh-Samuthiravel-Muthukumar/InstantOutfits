@@ -19,6 +19,7 @@ export function OutfitGenerator({ wardrobeItems, tasteProfiles }: Props) {
     tasteProfiles[0]?.id ?? "",
   );
   const [anchorItemId, setAnchorItemId] = useState<string | null>(null);
+  const [noOuterwear, setNoOuterwear] = useState(false);
   const [generated, setGenerated] = useState<GeneratedOutfit | null>(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +39,7 @@ export function OutfitGenerator({ wardrobeItems, tasteProfiles }: Props) {
       const result = await generateOutfitAction(
         selectedProfileId || undefined,
         anchorItemId ?? undefined,
+        noOuterwear,
       );
       if (result.error) setError(result.error);
       else if (result.outfit) setGenerated(result.outfit);
@@ -63,19 +65,33 @@ export function OutfitGenerator({ wardrobeItems, tasteProfiles }: Props) {
             AI-generated looks from your wardrobe
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleGenerate}
-          disabled={isGenerating || tasteProfiles.length === 0}
-          className={cn(
-            "bg-foreground px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-background transition-opacity",
-            isGenerating || tasteProfiles.length === 0
-              ? "cursor-not-allowed opacity-30"
-              : "hover:opacity-75",
-          )}
-        >
-          {isGenerating ? "Generating…" : "Generate Outfit"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setNoOuterwear((v) => !v)}
+            className={cn(
+              "border px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] transition-colors",
+              noOuterwear
+                ? "border-foreground bg-foreground text-background"
+                : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+            )}
+          >
+            No Outerwear
+          </button>
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={isGenerating || tasteProfiles.length === 0}
+            className={cn(
+              "bg-foreground px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-background transition-opacity",
+              isGenerating || tasteProfiles.length === 0
+                ? "cursor-not-allowed opacity-30"
+                : "hover:opacity-75",
+            )}
+          >
+            {isGenerating ? "Generating…" : "Generate Outfit"}
+          </button>
+        </div>
       </div>
 
       {/* Taste profile selector */}
