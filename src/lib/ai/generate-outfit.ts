@@ -19,7 +19,10 @@ function buildPrompt(
   quizAnswers: QuizAnswers,
   items: WardrobeItem[],
   season: string,
+  anchorItemId?: string,
 ): string {
+  const anchorItem = anchorItemId ? items.find((i) => i.id === anchorItemId) : null;
+
   const itemList = items
     .map(
       (item) =>
@@ -31,8 +34,13 @@ function buildPrompt(
     .map(([k, v]) => `  ${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
     .join("\n");
 
-  return `Current season: ${season}
+  const anchorBlock = anchorItem
+    ? `\nANCHOR PIECE — build the entire outfit around this item, it MUST appear in selectedItemIds:
+- ID: ${anchorItem.id} | ${anchorItem.category}${anchorItem.name ? ` "${anchorItem.name}"` : ""} | Color: ${anchorItem.color || "unspecified"}\n`
+    : "";
 
+  return `Current season: ${season}
+${anchorBlock}
 USER STYLE PROFILE (from quiz):
 ${quizSummary}
 
@@ -50,6 +58,8 @@ Hard rules:
 - You MUST ONLY reference item IDs from the wardrobe list provided. Never invent items.
 - Select 2–6 items that together make a complete look (e.g. top + bottom + shoes, or dress + shoes + accessory).
 - Never select duplicate categories unless it makes clear styling sense (e.g. two layering pieces).
+- OUTERWEAR: only include jackets, coats, or outerwear if the season is Winter or Autumn AND the occasion calls for it. Never default to outerwear in Spring or Summer. If the user has an anchor piece that is outerwear, that is the exception.
+- If an ANCHOR PIECE is specified, it must be included in selectedItemIds and every other selected item must complement it. Build the outfit rationale around that piece.
 
 Soft rules:
 - Prioritise the user's stated aesthetic preferences and occasion needs from their quiz answers.
@@ -61,6 +71,7 @@ export async function generateOutfit(
   quizAnswers: QuizAnswers,
   items: WardrobeItem[],
   distinctId: string,
+  anchorItemId?: string,
 ): Promise<GeneratedOutfit> {
   if (items.length === 0) {
     throw new Error(
@@ -80,7 +91,7 @@ export async function generateOutfit(
     model: anthropic("claude-haiku-4-5-20251001"),
     schema: OutfitSchema,
     system: SYSTEM_PROMPT,
-    prompt: buildPrompt(quizAnswers, items, season),
+    prompt: buildPrompt(quizAnswers, items, season, anchorItemId),
   });
 
   phClient.capture({

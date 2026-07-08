@@ -18,6 +18,7 @@ export function OutfitGenerator({ wardrobeItems, tasteProfiles }: Props) {
   const [selectedProfileId, setSelectedProfileId] = useState<string>(
     tasteProfiles[0]?.id ?? "",
   );
+  const [anchorItemId, setAnchorItemId] = useState<string | null>(null);
   const [generated, setGenerated] = useState<GeneratedOutfit | null>(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,10 @@ export function OutfitGenerator({ wardrobeItems, tasteProfiles }: Props) {
     setSaved(false);
     setGenerated(null);
     startGenerate(async () => {
-      const result = await generateOutfitAction(selectedProfileId || undefined);
+      const result = await generateOutfitAction(
+        selectedProfileId || undefined,
+        anchorItemId ?? undefined,
+      );
       if (result.error) setError(result.error);
       else if (result.outfit) setGenerated(result.outfit);
     });
@@ -110,6 +114,72 @@ export function OutfitGenerator({ wardrobeItems, tasteProfiles }: Props) {
             </Link>{" "}
             to generate outfits.
           </p>
+        </div>
+      )}
+
+      {/* Anchor item picker */}
+      {wardrobeItems.length > 0 && (
+        <div className="mb-8">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+              Build Around (optional)
+            </p>
+            {anchorItemId && (
+              <button
+                type="button"
+                onClick={() => setAnchorItemId(null)}
+                className="text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {wardrobeItems.map((item) => {
+              const isAnchor = anchorItemId === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() =>
+                    setAnchorItemId(isAnchor ? null : item.id)
+                  }
+                  className="flex w-20 shrink-0 flex-col gap-1.5 text-left"
+                >
+                  <div
+                    className={cn(
+                      "relative aspect-square w-full overflow-hidden bg-muted transition-all",
+                      isAnchor
+                        ? "outline outline-2 outline-foreground"
+                        : "outline outline-1 outline-transparent hover:outline-border",
+                    )}
+                  >
+                    {item.imageUrl ? (
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.name || item.category}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-[9px] text-muted-foreground">
+                        No img
+                      </div>
+                    )}
+                    {isAnchor && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-foreground/20">
+                        <span className="text-xs font-bold text-foreground">✓</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="truncate text-[10px] capitalize text-muted-foreground">
+                    {item.name || item.category}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 

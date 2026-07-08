@@ -18,7 +18,7 @@ export type SavedOutfit = {
   created_at: string;
 };
 
-export async function generateOutfitAction(profileId?: string): Promise<{
+export async function generateOutfitAction(profileId?: string, anchorItemId?: string): Promise<{
   outfit?: GeneratedOutfit;
   error?: string;
 }> {
@@ -56,7 +56,7 @@ export async function generateOutfitAction(profileId?: string): Promise<{
   }
 
   try {
-    const outfit = await generateOutfit(quizAnswers, items, user.id);
+    const outfit = await generateOutfit(quizAnswers, items, user.id, anchorItemId);
     return { outfit };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Generation failed." };
