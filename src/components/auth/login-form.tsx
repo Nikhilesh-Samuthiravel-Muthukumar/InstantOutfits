@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { signIn } from "~/app/login/actions";
+import { resolveEmail } from "~/app/login/actions";
+import { createClient } from "~/lib/supabase/client";
 import { cn } from "~/lib/utils";
 
 const INPUT =
@@ -21,9 +22,11 @@ export function LoginForm() {
     setError(null);
     startTransition(async () => {
       try {
-        await signIn(emailOrUsername, password);
+        const email = await resolveEmail(emailOrUsername);
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw new Error(error.message);
         router.push("/wardrobe/quiz");
-        router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong.");
       }

@@ -2,23 +2,19 @@
 
 import { createClient } from "~/lib/supabase/server";
 
-export async function signIn(emailOrUsername: string, password: string) {
+export async function resolveEmail(emailOrUsername: string): Promise<string> {
+  const input = emailOrUsername.trim();
+  if (input.includes("@")) return input;
+
   const supabase = await createClient();
-  let email = emailOrUsername.trim();
+  const { data } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("username", input)
+    .single();
 
-  if (!email.includes("@")) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("email")
-      .eq("username", email)
-      .single();
-
-    if (!data) throw new Error("No account found with that username.");
-    email = data.email;
-  }
-
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw new Error(error.message);
+  if (!data) throw new Error("No account found with that username.");
+  return data.email;
 }
 
 // Keep OTP as a fallback "magic link" option
